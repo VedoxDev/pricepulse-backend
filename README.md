@@ -5,7 +5,7 @@ Backend service for tracking product prices across multiple e-commerce platforms
 ## Features
 
 - FastAPI application with modular routing under `app/`
-- Async SQLAlchemy setup backed by PostgreSQL
+- Async SQLAlchemy setup backed by PostgreSQL, powered by Pydantic-based settings
 - Celery worker and beat configuration using Redis for broker/result backend
 - Placeholder domain layers for models, schemas, scrapers, and tasks
 
@@ -32,12 +32,19 @@ Backend service for tracking product prices across multiple e-commerce platforms
    VERSION=0.1.0
    API_V1_PREFIX=/api/v1
 
-   DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/pricepulse
+   DATABASE_URL=postgresql://postgres:<password>@mainline.proxy.rlwy.net:46475/railway
+   DATABASE_ECHO=false
+   DATABASE_POOL_SIZE=5
+   DATABASE_MAX_OVERFLOW=10
+   DATABASE_POOL_TIMEOUT=30
+
    REDIS_URL=redis://localhost:6379/0
    CELERY_BROKER_URL=redis://localhost:6379/0
    CELERY_RESULT_BACKEND=redis://localhost:6379/0
    SCRAPE_INTERVAL_MINUTES=60
    ```
+
+   > The application automatically adapts `postgresql://` URLs for async use (`postgresql+asyncpg://`), so you can paste connection strings from your provider directly.
 
 4. **Run the FastAPI app**:
 
