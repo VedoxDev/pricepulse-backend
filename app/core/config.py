@@ -87,6 +87,17 @@ class Settings(BaseSettings):
             return url.replace("postgresql://", "postgresql+asyncpg://", 1)
         return url
 
+    @property
+    def sqlalchemy_sync_database_url(self) -> str:
+        """Return sync SQLAlchemy URL using psycopg driver for migrations."""
+
+        url = str(self.database_url)
+        if url.startswith("postgresql+psycopg://"):
+            return url
+        if url.startswith("postgresql://"):
+            return url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return url
+
 
 @lru_cache
 def get_settings() -> Settings:
