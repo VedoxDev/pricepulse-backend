@@ -2,11 +2,12 @@
 
 from fastapi import APIRouter
 
-from . import products
+from . import history, products
 
 api_router = APIRouter()
 
-api_router.include_router(products.router, prefix="/products", tags=["products"])
+api_router.include_router(products.router)
+api_router.include_router(history.router)
 
 
 @api_router.get("/health", tags=["health"])

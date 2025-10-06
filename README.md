@@ -38,21 +38,29 @@ Backend service for tracking product prices across multiple e-commerce platforms
    DATABASE_MAX_OVERFLOW=10
    DATABASE_POOL_TIMEOUT=30
 
+   CORS_ALLOW_ORIGINS=*
+
    REDIS_URL=redis://localhost:6379/0
    CELERY_BROKER_URL=redis://localhost:6379/0
    CELERY_RESULT_BACKEND=redis://localhost:6379/0
    SCRAPE_INTERVAL_MINUTES=60
    ```
 
-   > The application automatically adapts `postgresql://` URLs for async use (`postgresql+asyncpg://`), so you can paste connection strings from your provider directly.
+   > The application automatically adapts `postgresql://` URLs for async use (`postgresql+asyncpg://`), so you can paste connection strings from your provider directly. Use comma-separated values in `CORS_ALLOW_ORIGINS` to list multiple origins.
 
-4. **Run the FastAPI app**:
+4. **Run database migrations**:
+
+   ```bash
+   alembic upgrade head
+   ```
+
+5. **Run the FastAPI app**:
 
    ```bash
    uvicorn app.main:app --reload
    ```
 
-5. **Start Celery worker & beat** (in separate terminals):
+6. **Start Celery worker & beat** (in separate terminals):
 
    ```bash
    celery -A app.tasks.celery_app.celery_app worker --loglevel=info
@@ -70,6 +78,7 @@ app/
 ├── schemas/         # Pydantic schemas
 ├── scrapers/        # Scraper abstraction layer
 └── tasks/           # Celery application and task definitions
+migrations/          # Alembic migration scripts
 ```
 
 ## License

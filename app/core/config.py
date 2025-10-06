@@ -1,9 +1,15 @@
 """Application configuration and settings."""
 
 from functools import lru_cache
+from pathlib import Path
 
+from dotenv import load_dotenv
 from pydantic import Field, FieldValidationInfo, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+# Ensure values defined in an .env file are available before settings initialisation.
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / ".env", override=False)
 
 
 class Settings(BaseSettings):
@@ -30,6 +36,11 @@ class Settings(BaseSettings):
     docs_url: str | None = "/docs"
     redoc_url: str | None = "/redoc"
 
+    cors_allow_origins: list[str] = Field(
+        default_factory=lambda: ["*"],
+        description="Comma-separated origins allowed for CORS.",
+    )
+
     database_url: PostgresDsn = Field(
         default="postgresql://postgres:postgres@localhost:5432/pricepulse",
         description="PostgreSQL connection string.",
@@ -45,6 +56,15 @@ class Settings(BaseSettings):
     celery_result_backend: str | None = None
 
     scrape_interval_minutes: int = Field(default=60, ge=1, description="Task interval in minutes.")
+
+    @field_validator("cors_allow_origins", mode="before")
+    @classmethod
+    def _split_cors_origins(cls, value: str | list[str]) -> list[str]:
+        """Allow comma-delimited origins in env vars."""
+
+        if isinstance(value, str):
+            return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
 
     @field_validator("celery_broker_url", "celery_result_backend", mode="before")
     @classmethod
