@@ -1,5 +1,5 @@
 """ORM models used by the PricePulse service."""
 
-from .product import Product
+from .product import PriceHistory, Product
 
-__all__ = ["Product"]
+__all__ = ["Product", "PriceHistory"]

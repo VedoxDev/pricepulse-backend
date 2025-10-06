@@ -1,9 +1,12 @@
-"""SQLAlchemy model representing a tracked product."""
+"""SQLAlchemy models for products and their price history."""
+
+from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal
 
-from sqlalchemy import String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import ForeignKey, Numeric, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
@@ -18,8 +21,8 @@ class Product(Base):
     url: Mapped[str] = mapped_column(Text, unique=True)
     platform: Mapped[str] = mapped_column(String(length=50))
 
-    target_price: Mapped[float | None] = mapped_column(nullable=True)
-    last_price: Mapped[float | None] = mapped_column(nullable=True)
+    target_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    last_price: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
     currency: Mapped[str | None] = mapped_column(String(length=8), nullable=True)
 
     is_active: Mapped[bool] = mapped_column(default=True)
@@ -27,3 +30,23 @@ class Product(Base):
 
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    price_history: Mapped[list["PriceHistory"]] = relationship(
+        "PriceHistory",
+        back_populates="product",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+
+class PriceHistory(Base):
+    """Historical record of product price snapshots."""
+
+    __tablename__ = "price_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    checked_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+
+    product: Mapped[Product] = relationship("Product", back_populates="price_history")
